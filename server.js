@@ -6,11 +6,9 @@ const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { WebSocketServer } = require('ws');
 const http = require('http');
-
-// --- MODIFICATION ICI : ON PASSE EN MÉMOIRE RAM ---
 const low = require('lowdb');
-// On utilise Memory au lieu de FileSync. Plus aucun fichier n'est écrit sur le disque.
-const Memory = require('lowdb/adapters/Memory');
+const FileSync = require('lowdb/adapters/FileSync');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -22,26 +20,21 @@ const ADMIN_EMAIL = 'altaycevik@gmail.com';
 
 if (!GEMINI_API_KEY) {
   console.error('❌ ERREUR : GEMINI_API_KEY manquante');
-  // On évite le crash brutal, on log juste l'erreur
+  process.exit(1);
 }
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "API_KEY_MANQUANTE");
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const PRIMARY_MODEL = 'gemini-2.0-flash-exp';
 
-// Plus de calcul de chemin, plus de /tmp. Juste la mémoire.
-const adapter = new Memory();
+const adapter = new FileSync('db.json');
 const db = low(adapter);
 
-// Le reste ne change pas...
 db.defaults({
   users: [],
   history: [],
   dailyUsage: {},
   subscriptions: []
 }).write();
-
-app.use(cors());
-// ... la suite de ton code reste pareil
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -986,15 +979,11 @@ app.get('/', (req, res) => {
 });
 
 server.listen(PORT, () => {
-  const host = process.env.NODE_ENV === 'production' ? `ehosp.onrender.com` : 'localhost';
-  const protocol = process.env.NODE_ENV === 'production' ? 'https://' : 'http://';
-  const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://';
-
   console.log(`\n🏥 ========================================`);
   console.log(`   EHOSP - Système Multi-Agents + Visio`);
   console.log(`========================================`);
-  console.log(`📍 URL: ${protocol}${host}:${PORT}`);
-  console.log(`🎥 WebSocket: ${wsProtocol}${host}:${PORT}`);
+  console.log(`📍 URL: http://localhost:${PORT}`);
+  console.log(`🎥 WebSocket: ws://localhost:${PORT}`);
   console.log(`🤖 Modèle: ${PRIMARY_MODEL}`);
   console.log(`👨‍⚕️ Médecins: 14 spécialistes`);
   console.log(`🔐 Admin: ${ADMIN_EMAIL}`);
