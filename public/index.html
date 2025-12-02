@@ -997,12 +997,14 @@
     async function loginWithGoogle() {
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithRedirect(provider);
+        const result = await auth.signInWithPopup(provider);  // ✅ POPUP
+        console.log('Login réussi:', result.user.email);     // ✅ Debug
       } catch (error) {
         console.error('Erreur auth:', error);
-        alert('Erreur de connexion: ' + error.message);
+        alert('Erreur: ' + error.message);
       }
     }
+
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
