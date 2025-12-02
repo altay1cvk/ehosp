@@ -979,11 +979,15 @@ app.get('/', (req, res) => {
 });
 
 server.listen(PORT, () => {
+  const host = process.env.NODE_ENV === 'production' ? `ehosp.onrender.com` : 'localhost';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https://' : 'http://';
+  const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss://' : 'ws://';
+
   console.log(`\n🏥 ========================================`);
   console.log(`   EHOSP - Système Multi-Agents + Visio`);
   console.log(`========================================`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
-  console.log(`🎥 WebSocket: ws://localhost:${PORT}`);
+  console.log(`📍 URL: ${protocol}${host}:${PORT}`);
+  console.log(`🎥 WebSocket: ${wsProtocol}${host}:${PORT}`);
   console.log(`🤖 Modèle: ${PRIMARY_MODEL}`);
   console.log(`👨‍⚕️ Médecins: 14 spécialistes`);
   console.log(`🔐 Admin: ${ADMIN_EMAIL}`);
