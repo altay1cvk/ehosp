@@ -1010,7 +1010,7 @@
       if (user) {
         // User connecté
         const token = await user.getIdToken();
-        const response = await fetch(`${API_URL}/apiauth`, {
+        const response = await fetch(`${API_URL}/api/auth`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, token })
