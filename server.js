@@ -28,7 +28,11 @@ const PRIMARY_MODEL = 'gemini-2.0-flash-exp';
 
 // NOUVEAU CODE (Fonctionne sur Render) ✅
 // On utilise /tmp/ uniquement si on est en ligne
-const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/db.json' : 'db.json';
+const fs = require('fs');
+
+// Si le dossier /tmp existe (c'est le cas sur Render), on l'utilise. Sinon on reste en local.
+const dbPath = fs.existsSync('/tmp') ? '/tmp/db.json' : 'db.json';
+
 const adapter = new FileSync(dbPath);
 const db = low(adapter);
 
