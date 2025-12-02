@@ -1006,37 +1006,27 @@
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        currentUser = user;
-
-        const response = await fetch(`${API_URL}/api/auth`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: currentUser.email,
-            displayName: currentUser.displayName,
-            token: await currentUser.getIdToken()
-          })
+        // User connecté
+        const token = await user.getIdToken();
+        const response = await fetch(`${API_URL}/apiauth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email, token })
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-          document.getElementById('authScreen').classList.add('hidden');
-          document.getElementById('appContainer').classList.remove('hidden');
-
-          currentPlan = data.user.subscription || 'free';
-          updateUserProfile(data.user);
-          updateQuota(data.quota);
-          await loadDoctors();
-
-          if (!data.user.profile) {
-            openProfileModal();
-          } else {
-            userProfile = data.user.profile;
-          }
+        if (response.ok) {
+          // cacher authScreen, afficher appContainer
+          document.getElementById("authScreen").classList.add("hidden");
+          document.getElementById("appContainer").classList.remove("hidden");
+        } else {
+          alert("Erreur auth serveur");
         }
+      } else {
+        // user déconnecté
+        document.getElementById("authScreen").classList.remove("hidden");
+        document.getElementById("appContainer").classList.add("hidden");
       }
     });
+
 
     function updateUserProfile(user) {
       document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
