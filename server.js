@@ -26,7 +26,10 @@ if (!GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const PRIMARY_MODEL = 'gemini-2.0-flash-exp';
 
-const adapter = new FileSync('db.json');
+// NOUVEAU CODE (Fonctionne sur Render) ✅
+// On utilise /tmp/ uniquement si on est en ligne
+const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/db.json' : 'db.json';
+const adapter = new FileSync(dbPath);
 const db = low(adapter);
 
 db.defaults({
