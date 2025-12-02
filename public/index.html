@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EHOSP - Hôpital Virtuel IA</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+      height: 90vh;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(45deg, #fff, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 32px;
+    }
+
+    .user-profile {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      object-fit: cover;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .user-plan {
+      font-size: 12px;
+      opacity: 0.7;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .quota-display {
+      margin-top: 12px;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .quota-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .quota-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      transition: width 0.3s;
+    }
+
+    .doctors-section {
+      margin-top: 24px;
+      flex: 1;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.7;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .doctor-card {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      position: relative;
+    }
+
+    .doctor-card:hover:not(.locked) {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(4px);
+    }
+
+    .doctor-card.active {
+      background: white;
+      color: #1e3a8a;
+      border-color: #10b981;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .doctor-card.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .doctor-card.locked::after {
+      content: '🔒';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+    }
+
+    .doctor-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doctor-avatar {
+      font-size: 32px;
+    }
+
+    .doctor-info h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .doctor-info p {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .doctor-experience {
+      font-size: 11px;
+      margin-top: 4px;
+      opacity: 0.7;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f9fafb;
+    }
+
+    .chat-header {
+      background: white;
+      padding: 20px 32px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .current-doctor {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .current-doctor-avatar {
+      font-size: 40px;
+    }
+
+    .current-doctor-info h2 {
+      font-size: 20px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .current-doctor-info p {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-icon {
+      padding: 10px 12px;
+      font-size: 18px;
+    }
+
+    .btn-visio {
+      background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+      color: white !important;
+      animation: pulse-visio 2s infinite;
+    }
+
+    @keyframes pulse-visio {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .btn-visio:hover {
+      transform: translateY(-2px) scale(1.05) !important;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+      animation: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 16px 20px;
+      border-radius: 16px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant .message-content {
+      background: white;
+      color: #1f2937;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .message.system {
+      justify-content: center;
+    }
+
+    .message.system .message-content {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 12px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      max-width: 80%;
+      text-align: center;
+    }
+
+    .loading-indicator {
+      display: flex;
+      gap: 6px;
+      padding: 12px;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ca3af;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .loading-dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    .chat-input {
+      background: white;
+      padding: 24px 32px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 16px 120px 16px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: none;
+      transition: all 0.3s;
+      max-height: 120px;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .input-actions {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background: #f3f4f6;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .input-btn:hover {
+      background: #e5e7eb;
+      transform: scale(1.05);
+    }
+
+    .send-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      color: #1f2937;
+    }
+
+    .close-modal {
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      transition: color 0.3s;
+    }
+
+    .close-modal:hover {
+      color: #1f2937;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .price-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .price-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .price-card.active {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+
+    .plan-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1f2937;
+    }
+
+    .plan-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #3b82f6;
+      margin-bottom: 4px;
+    }
+
+    .plan-period {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 16px;
+    }
+
+    .plan-features li {
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 8px;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .current-plan-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #10b981;
+      color: white;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .auth-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .auth-logo {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    .auth-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .auth-subtitle {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 40px;
+    }
+
+    .auth-btn {
+      background: white;
+      color: #1f2937;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s;
+    }
+
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ========== FIX VIDÉO - PAS DE ZOOM ========== */
+    #visioVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* PAS de transform qui cause le zoom */
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        display: none;
+      }
+
+      .container {
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="authScreen" class="auth-container">
+    <div class="auth-logo">🏥</div>
+    <h1 class="auth-title">EHOSP</h1>
+    <p class="auth-subtitle">Votre Hôpital Virtuel 24/7<br>14 Médecins Experts · IA Médicale Souveraine</p>
+    <button class="auth-btn" onclick="loginWithGoogle()">
+      <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24">
+        <path fill="#4285F4"
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+        <path fill="#34A853"
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path fill="#FBBC05"
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path fill="#EA4335"
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg>
+      Se connecter avec Google
+    </button>
+  </div>
+
+  <div id="appContainer" class="container hidden">
+    <div class="sidebar">
+      <div class="logo">EHOSP</div>
+      <div class="tagline">Hôpital Virtuel Multi-Agents</div>
+      <div class="user-profile">
+        <img id="userAvatar" class="user-avatar" src="https://via.placeholder.com/56" alt="Avatar">
+        <div class="user-name" id="userName">Utilisateur</div>
+        <div class="user-plan" id="userPlanBadge">Gratuit</div>
+        <div class="quota-display">
+          <div><span id="quotaRemaining">5</span> / <span id="quotaLimit">5</span> consultations</div>
+          <div class="quota-bar">
+            <div id="quotaFill" class="quota-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="width: 100%; margin-top: 12px;" onclick="openProfileModal()">⚙️
+          Profil</button>
+        <button class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="openPricingModal()">💎
+          Abonnement</button>
+      </div>
+      <div class="doctors-section">
+        <div class="section-title">Médecins Disponibles</div>
+        <div id="doctorsList"></div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="chat-header">
+        <div class="current-doctor">
+          <div class="current-doctor-avatar" id="currentDoctorAvatar">👨‍⚕️</div>
+          <div class="current-doctor-info">
+            <h2 id="currentDoctorName">Dr. Adam</h2>
+            <p id="currentDoctorSpecialty">Médecine Générale & Régulation</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-icon btn-secondary" onclick="openDoctorBio()" title="Voir le CV">📋</button>
+          <button class="btn btn-icon btn-secondary" onclick="uploadImage()" title="Analyser une image">📷</button>
+          <button class="btn btn-primary btn-visio" onclick="openVisioModal()">🎥 VISIO</button>
+          <button class="btn btn-primary" onclick="exportPDF()">📄 Export PDF</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages"></div>
+
+      <div class="chat-input">
+        <div class="input-container">
+          <div class="input-wrapper">
+            <textarea id="messageInput" class="input-field" placeholder="Décrivez vos symptômes..." rows="1"></textarea>
+            <div class="input-actions">
+              <button class="input-btn" onclick="uploadImage()" title="Image">📷</button>
+            </div>
+          </div>
+          <button class="send-btn" onclick="sendMessage()" id="sendBtn">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Profil -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Mon Profil Médical</h3>
+        <button class="close-modal" onclick="closeProfileModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="profileForm" onsubmit="saveProfile(event)">
+          <div class="form-group">
+            <label>Âge</label>
+            <input type="number" id="profileAge" class="form-control" min="0" max="120" required>
+          </div>
+          <div class="form-group">
+            <label>Sexe</label>
+            <select id="profileSex" class="form-control" required>
+              <option value="">Sélectionner</option>
+              <option value="Homme">Homme</option>
+              <option value="Femme">Femme</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pays</label>
+            <input type="text" id="profileCountry" class="form-control" value="France" required>
+          </div>
+          <div class="form-group">
+            <label>Langue</label>
+            <select id="profileLanguage" class="form-control">
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Abonnement -->
+  <div id="pricingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Plans d'Abonnement</h3>
+        <button class="close-modal" onclick="closePricingModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="pricing-grid" id="pricingGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bio Médecin -->
+  <div id="doctorBioModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Profil du Médecin</h3>
+        <button class="close-modal" onclick="closeDoctorBio()">×</button>
+      </div>
+      <div class="modal-body" id="doctorBioContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal Visio -->
+  <div id="visioModal" class="modal">
+    <div class="modal-content" style="max-width: 1100px;">
+      <div class="modal-header">
+        <h3>🎥 Consultation Visio en Direct</h3>
+        <button class="close-modal" onclick="closeVisioModal()">×</button>
+      </div>
+      <div class="modal-body" style="display: flex; gap: 24px; min-height: 550px; padding: 32px;">
+
+        <!-- Zone Webcam -->
+        <div
+          style="flex: 1; background: #000; border-radius: 16px; position: relative; overflow: hidden; min-height: 550px;">
+          <video id="visioVideo" autoplay muted playsinline></video>
+          <div id="visioPlaceholder"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; gap: 20px;">
+            <div style="font-size: 80px;">📹</div>
+            <div style="font-size: 18px;">Cliquez sur "Démarrer" pour activer la webcam</div>
+            <div style="font-size: 14px; opacity: 0.7;">Chrome recommandé • Le médecin vous écoute ET vous voit</div>
+          </div>
+        </div>
+
+        <!-- Panel Médecin + Conversation -->
+        <div style="width: 420px; display: flex; flex-direction: column;">
+
+          <!-- Carte Médecin -->
+          <div
+            style="text-align: center; padding: 24px; background: linear-gradient(135deg, #f9fafb, #ffffff); border-radius: 16px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <div style="font-size: 72px; margin-bottom: 12px;" id="visioDoctorAvatar">👨‍⚕️</div>
+            <h3 style="margin-bottom: 4px; font-size: 22px; color: #1f2937;" id="visioDoctorName">Dr. Adam</h3>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 12px;" id="visioDoctorSpecialty">Médecine Générale
+              & Régulation</p>
+            <span id="visioStatus"
+              style="display: inline-block; padding: 8px 16px; background: #6b7280; color: white; border-radius: 24px; font-size: 13px; font-weight: 600;">En
+              attente</span>
+          </div>
+
+          <!-- Zone Conversation -->
+          <div
+            style="flex: 1; overflow-y: auto; margin-bottom: 20px; background: #f9fafb; border-radius: 12px; padding: 16px;">
+            <div id="visioConversation" style="display: flex; flex-direction: column; gap: 12px;">
+              <div
+                style="text-align: center; padding: 12px; background: #fff3cd; border-radius: 8px; font-size: 13px; color: #856404;">
+                💡 Parlez naturellement, le médecin vous écoute et vous voit
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons de contrôle -->
+          <div style="display: flex; gap: 12px;">
+            <button id="visioStartBtn" class="btn btn-primary" onclick="startVisio()"
+              style="flex: 1; font-size: 16px; padding: 14px;">
+              🎥 Démarrer
+            </button>
+            <button id="visioStopBtn" class="btn btn-danger" onclick="stopVisio()" disabled
+              style="flex: 1; font-size: 16px; padding: 14px;">
+              🛑 Arrêter
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUftm5YLpjxr4AcvxziWpC4Cgb1jbOP4k",
+      authDomain: "ehosp-6f065.firebaseapp.com",
+      projectId: "ehosp-6f065",
+      storageBucket: "ehosp-6f065.firebasestorage.app",
+      messagingSenderId: "566717871670",
+      appId: "1:566717871670:web:367a25bd6e0d70eea10a97",
+      measurementId: "G-EG19WDTL00"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    let currentUser = null;
+    let currentDoctor = 'general';
+    let conversation = [];
+    let doctors = [];
+    let userProfile = null;
+    let currentPlan = 'free';
+
+    const API_URL = 'http://localhost:3000';
+
+    // ========== AUTHENTIFICATION ==========
+    async function loginWithGoogle() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithRedirect(provider);
+      } catch (error) {
+        console.error('Erreur auth:', error);
+        alert('Erreur de connexion: ' + error.message);
+      }
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+
+        const response = await fetch(`${API_URL}/api/auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            token: await currentUser.getIdToken()
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('authScreen').classList.add('hidden');
+          document.getElementById('appContainer').classList.remove('hidden');
+
+          currentPlan = data.user.subscription || 'free';
+          updateUserProfile(data.user);
+          updateQuota(data.quota);
+          await loadDoctors();
+
+          if (!data.user.profile) {
+            openProfileModal();
+          } else {
+            userProfile = data.user.profile;
+          }
+        }
+      }
+    });
+
+    function updateUserProfile(user) {
+      document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
+      document.getElementById('userPlanBadge').textContent = user.plan?.name || 'Gratuit';
+
+      if (auth.currentUser?.photoURL) {
+        document.getElementById('userAvatar').src = auth.currentUser.photoURL;
+      }
+    }
+
+    function updateQuota(quota) {
+      document.getElementById('quotaRemaining').textContent = quota.remaining;
+      document.getElementById('quotaLimit').textContent = quota.limit;
+
+      const percentage = (quota.remaining / quota.limit) * 100;
+      document.getElementById('quotaFill').style.width = percentage + '%';
+    }
+
+    async function loadDoctors() {
+      try {
+        const response = await fetch(`${API_URL}/api/doctors?email=${currentUser.email}`);
+        const data = await response.json();
+
+        if (data.success) {
+          doctors = data.doctors;
+          renderDoctorsList();
+        }
+      } catch (error) {
+        console.error('Erreur chargement médecins:', error);
+      }
+    }
+
+    function renderDoctorsList() {
+      const container = document.getElementById('doctorsList');
+      container.innerHTML = doctors.map(doctor => `
+        <div class="doctor-card ${doctor.locked ? 'locked' : ''} ${doctor.id === currentDoctor ? 'active' : ''}"
+             onclick="${doctor.locked ? '' : `selectDoctor('${doctor.id}')`}">
+          <div class="doctor-header">
+            <div class="doctor-avatar">${doctor.avatar}</div>
+            <div class="doctor-info">
+              <h4>${doctor.name}</h4>
+              <p>${doctor.specialty}</p>
+              <div class="doctor-experience">${doctor.experience} d'expérience</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectDoctor(doctorId) {
+      if (doctorId === currentDoctor) return;
+
+      currentDoctor = doctorId;
+      const doctor = doctors.find(d => d.id === doctorId);
+
+      document.getElementById('currentDoctorAvatar').textContent = doctor.avatar;
+      document.getElementById('currentDoctorName').textContent = doctor.name;
+      document.getElementById('currentDoctorSpecialty').textContent = doctor.specialty;
+
+      renderDoctorsList();
+    }
+
+    // ========== CHAT TEXTE ==========
+    function addMessage(role, content) {
+      const messagesDiv = document.getElementById('chatMessages');
+      const avatar = role === 'user' ? '👤' : doctors.find(d => d.id === currentDoctor)?.avatar || '👨‍⚕️';
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
+      `;
+
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      conversation.push({ role, content });
+    }
+
+    function addSystemMessage(content) {
+      const messagesDiv = document.getElementById('chatMessages');
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message system';
+      messageDiv.innerHTML = `
+        <div class="message-content">${content}</div>
+      `;
+
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function showLoading() {
+      const messagesDiv = document.getElementById('chatMessages');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loadingIndicator';
+      loadingDiv.className = 'message assistant';
+      loadingDiv.innerHTML = `
+        <div class="message-avatar">${doctors.find(d => d.id === currentDoctor)?.avatar || '👨‍⚕️'}</div>
+        <div class="message-content">
+          <div class="loading-indicator">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+        </div>
+      `;
+      messagesDiv.appendChild(loadingDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function hideLoading() {
+      const loadingDiv = document.getElementById('loadingIndicator');
+      if (loadingDiv) loadingDiv.remove();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      input.value = '';
+      input.style.height = 'auto';
+
+      addMessage('user', message);
+      showLoading();
+
+      try {
+        const response = await fetch(`${API_URL}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: conversation,
+            specialist: currentDoctor,
+            userProfile: userProfile,
+            userEmail: currentUser.email
+          })
+        });
+
+        const data = await response.json();
+        hideLoading();
+
+        if (response.ok && data.success) {
+          addMessage('assistant', data.response);
+          updateQuota(data.quota);
+
+          if (data.autoRedirect && data.specialist !== currentDoctor) {
+            console.log('🔀 Redirection détectée vers:', data.specialist);
+
+            const newDoctor = doctors.find(d => d.id === data.specialist);
+
+            if (newDoctor && !newDoctor.locked) {
+              addSystemMessage(`🔀 Redirection automatique vers ${newDoctor.name} - ${newDoctor.specialty}`);
+
+              setTimeout(() => {
+                selectDoctor(data.specialist);
+                addSystemMessage(`${newDoctor.avatar} ${newDoctor.name} prend le relais de votre consultation`);
+                console.log('✅ Historique préservé:', conversation.length, 'messages');
+              }, 1000);
+
+            } else if (newDoctor && newDoctor.locked) {
+              addSystemMessage(`🔒 ${newDoctor.name} nécessite un abonnement supérieur. Cliquez sur 💎 Abonnement.`);
+            }
+          }
+        } else {
+          if (data.upgrade) {
+            addSystemMessage(data.error + ' Passez à un plan supérieur.');
+          } else {
+            addSystemMessage('Erreur: ' + data.error);
+          }
+        }
+      } catch (error) {
+        hideLoading();
+        console.error('Erreur:', error);
+        addSystemMessage('Erreur de connexion au serveur.');
+      }
+    }
+
+    // ========== MODALS ==========
+    function openProfileModal() {
+      if (userProfile) {
+        document.getElementById('profileAge').value = userProfile.age || '';
+        document.getElementById('profileSex').value = userProfile.sex || '';
+        document.getElementById('profileCountry').value = userProfile.country || 'France';
+        document.getElementById('profileLanguage').value = userProfile.language || 'fr';
+      }
+      document.getElementById('profileModal').classList.add('active');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.remove('active');
+    }
+
+    async function saveProfile(event) {
+      event.preventDefault();
+
+      const profile = {
+        email: currentUser.email,
+        age: parseInt(document.getElementById('profileAge').value),
+        sex: document.getElementById('profileSex').value,
+        country: document.getElementById('profileCountry').value,
+        language: document.getElementById('profileLanguage').value
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/api/profile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          userProfile = profile;
+          closeProfileModal();
+          addSystemMessage('✅ Profil mis à jour !');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur sauvegarde profil');
+      }
+    }
+
+    function openPricingModal() {
+      loadPricingPlans();
+      document.getElementById('pricingModal').classList.add('active');
+    }
+
+    function closePricingModal() {
+      document.getElementById('pricingModal').classList.remove('active');
+    }
+
+    function loadPricingPlans() {
+      const plans = [
+        { id: 'free', name: 'Gratuit', price: '0€', features: ['Dr. Adam uniquement', '5 consultations/jour'] },
+        { id: 'student', name: 'Étudiant', price: '19.99€/an', features: ['Dr. Adam + 2 autres', '50/jour', 'Export PDF'] },
+        { id: 'individual', name: 'Individuel', price: '29.99€/an', features: ['Tous les 14 spécialistes', 'Illimité', 'Images', 'PDF'] },
+        { id: 'family', name: 'Famille', price: '49.99€/an', features: ['5 profils', 'Tous spécialistes', 'Toutes fonctionnalités'] },
+        { id: 'enterprise', name: 'Entreprise', price: 'Sur devis', features: ['Dashboard RH', 'Support dédié', 'Illimité'] }
+      ];
+
+      const grid = document.getElementById('pricingGrid');
+      grid.innerHTML = plans.map(plan => `
+        <div class="price-card ${plan.id === currentPlan ? 'active' : ''}">
+          ${plan.id === currentPlan ? '<div class="current-plan-badge">Plan actuel</div>' : ''}
+          <div class="plan-name">${plan.name}</div>
+          <div class="plan-price">${plan.price}</div>
+          <ul class="plan-features">
+            ${plan.features.map(f => `<li>${f}</li>`).join('')}
+          </ul>
+          <button class="btn btn-primary" style="width: 100%;" onclick="selectPlan('${plan.id}')">
+            ${plan.id === currentPlan ? 'Plan actif' : 'Choisir'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function selectPlan(planId) {
+      if (planId === currentPlan) {
+        closePricingModal();
+        return;
+      }
+
+      if (currentUser.email === 'altaycevik@gmail.com') {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/change-plan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: currentUser.email,
+              adminEmail: currentUser.email,
+              newPlan: planId
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            currentPlan = planId;
+            closePricingModal();
+            addSystemMessage(`✅ Plan changé vers ${planId.toUpperCase()} ! Rechargement...`);
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            alert('Erreur: ' + data.message);
+          }
+        } catch (error) {
+          console.error('Erreur:', error);
+          alert('Erreur connexion');
+        }
+      } else {
+        alert('🚧 Paiement en développement\n\nContactez altaycevik@gmail.com');
+      }
+    }
+
+    function openDoctorBio() {
+      const doctor = doctors.find(d => d.id === currentDoctor);
+      const content = document.getElementById('doctorBioContent');
+
+      content.innerHTML = `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 64px; margin-bottom: 16px;">${doctor.avatar}</div>
+          <h2 style="font-size: 24px; color: #1f2937; margin-bottom: 8px;">${doctor.name}</h2>
+          <p style="color: #3b82f6; font-weight: 600; font-size: 16px;">${doctor.specialty}</p>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">${doctor.experience} d'expérience</p>
+        </div>
+        <div style="background: #f9fafb; padding: 20px; border-radius: 12px; line-height: 1.6;">
+          <h4 style="margin-bottom: 12px; color: #1f2937;">Parcours Professionnel</h4>
+          <p style="color: #4b5563; font-size: 15px;">${doctor.bio}</p>
+        </div>
+      `;
+
+      document.getElementById('doctorBioModal').classList.add('active');
+    }
+
+    function closeDoctorBio() {
+      document.getElementById('doctorBioModal').classList.remove('active');
+    }
+
+    function uploadImage() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = handleImageUpload;
+      input.click();
+    }
+
+    async function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imageBase64 = e.target.result;
+
+        addSystemMessage('📷 Analyse en cours...');
+        showLoading();
+
+        try {
+          const response = await fetch(`${API_URL}/api/analyze-image`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageBase64,
+              imageType: file.type,
+              userProfile,
+              userEmail: currentUser.email
+            })
+          });
+
+          const data = await response.json();
+          hideLoading();
+
+          if (response.ok && data.success) {
+            addMessage('assistant', data.analysis);
+            updateQuota(data.quota);
+          } else {
+            addSystemMessage(data.error || 'Erreur analyse');
+          }
+        } catch (error) {
+          hideLoading();
+          console.error('Erreur:', error);
+          addSystemMessage('Erreur connexion');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function exportPDF() {
+      try {
+        const response = await fetch(`${API_URL}/api/summary`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation,
+            language: userProfile?.language || 'fr',
+            userEmail: currentUser.email
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const content = `EHOSP - Consultation Médicale
+Date: ${new Date().toLocaleDateString('fr-FR')}
+Médecin: ${doctors.find(d => d.id === currentDoctor)?.name}
+
+${data.summary}
+
+---
+CONVERSATION COMPLÈTE
+---
+
+${conversation.map(msg => `${msg.role === 'user' ? 'Patient' : 'Médecin'}: ${msg.content}`).join('\n\n')}`;
+
+          const blob = new Blob([content], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ehosp-${Date.now()}.txt`;
+          a.click();
+
+          addSystemMessage('✅ Export réussi !');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        addSystemMessage('Erreur export');
+      }
+    }
+
+    // ========== VISIO AVEC ANALYSE VIDÉO ==========
+    let visioWs = null;
+    let visioStream = null;
+    let visioRecognition = null;
+    let isVisioActive = false;
+    let videoAnalysisInterval = null;
+
+    function openVisioModal() {
+      if (!currentUser) {
+        alert('Veuillez vous connecter d\'abord');
+        return;
+      }
+      document.getElementById('visioModal').classList.add('active');
+    }
+
+    function closeVisioModal() {
+      if (isVisioActive) {
+        stopVisio();
+      }
+      document.getElementById('visioModal').classList.remove('active');
+    }
+
+    async function startVisio() {
+      try {
+        console.log('🎥 Démarrage de la visio...');
+
+        visioStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 1280, height: 720 },
+          audio: true
+        });
+
+        const video = document.getElementById('visioVideo');
+        video.srcObject = visioStream;
+        video.style.display = 'block';
+        document.getElementById('visioPlaceholder').style.display = 'none';
+
+        const wsUrl = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        visioWs = new WebSocket(wsUrl + window.location.host);
+
+        visioWs.onopen = () => {
+          console.log('✅ WebSocket connecté');
+
+          visioWs.send(JSON.stringify({
+            type: 'start',
+            email: currentUser.email
+          }));
+
+          isVisioActive = true;
+          document.getElementById('visioStatus').textContent = '🟢 En consultation';
+          document.getElementById('visioStatus').style.background = '#10b981';
+          document.getElementById('visioStartBtn').disabled = true;
+          document.getElementById('visioStopBtn').disabled = false;
+
+          startVisioSpeechRecognition();
+          startVideoAnalysis();
+        };
+
+        visioWs.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleVisioMessage(data);
+          } catch (error) {
+            console.error('Erreur parsing message:', error);
+          }
+        };
+
+        visioWs.onerror = (error) => {
+          console.error('❌ Erreur WebSocket:', error);
+          addVisioMessage('system', '⚠️ Erreur de connexion au serveur');
+        };
+
+        visioWs.onclose = () => {
+          console.log('🔌 WebSocket fermé');
+          if (isVisioActive) {
+            addVisioMessage('system', '⚠️ Connexion perdue');
+          }
+        };
+
+      } catch (error) {
+        console.error('❌ Erreur démarrage visio:', error);
+        let errorMsg = 'Erreur : ' + error.message;
+
+        if (error.name === 'NotAllowedError') {
+          errorMsg = 'Vous devez autoriser l\'accès à la webcam et au microphone.\n\nVérifiez les permissions dans votre navigateur.';
+        } else if (error.name === 'NotFoundError') {
+          errorMsg = 'Aucune webcam ou microphone détecté.';
+        }
+
+        alert(errorMsg);
+      }
+    }
+
+    function startVideoAnalysis() {
+      const video = document.getElementById('visioVideo');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      videoAnalysisInterval = setInterval(() => {
+        if (!isVisioActive || !visioWs || visioWs.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const frameData = canvas.toDataURL('image/jpeg', 0.7);
+
+        visioWs.send(JSON.stringify({
+          type: 'videoFrame',
+          data: frameData
+        }));
+
+        console.log('📸 Frame envoyée pour analyse');
+      }, 5000);
+    }
+
+    function startVisioSpeechRecognition() {
+      if (!('webkitSpeechRecognition' in window)) {
+        addVisioMessage('system', '⚠️ Reconnaissance vocale non supportée. Utilisez Chrome.');
+        alert('La reconnaissance vocale nécessite Chrome ou Edge.');
+        return;
+      }
+
+      visioRecognition = new webkitSpeechRecognition();
+      visioRecognition.lang = 'fr-FR';
+      visioRecognition.continuous = true;
+      visioRecognition.interimResults = false;
+      visioRecognition.maxAlternatives = 1;
+
+      visioRecognition.onstart = () => {
+        console.log('🎤 Reconnaissance vocale démarrée');
+      };
+
+      visioRecognition.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        console.log('🎤 Vous avez dit:', transcript);
+
+        addVisioMessage('patient', transcript);
+
+        if (visioWs && visioWs.readyState === WebSocket.OPEN) {
+          visioWs.send(JSON.stringify({
+            type: 'transcript',
+            text: transcript
+          }));
+        }
+      };
+
+      visioRecognition.onerror = (event) => {
+        console.error('❌ Erreur reconnaissance vocale:', event.error);
+
+        if (event.error === 'no-speech') {
+          console.log('Pas de parole détectée, en attente...');
+        } else if (event.error === 'network') {
+          addVisioMessage('system', '⚠️ Erreur réseau pour la reconnaissance vocale');
+        }
+      };
+
+      visioRecognition.onend = () => {
+        if (isVisioActive && visioRecognition) {
+          setTimeout(() => {
+            try {
+              visioRecognition.start();
+            } catch (e) {
+              console.log('Reconnaissance déjà en cours');
+            }
+          }, 100);
+        }
+      };
+
+      try {
+        visioRecognition.start();
+      } catch (error) {
+        console.error('Erreur démarrage reconnaissance:', error);
+      }
+    }
+
+    function handleVisioMessage(data) {
+      console.log('📨 Message reçu:', data.type);
+
+      switch (data.type) {
+        case 'started':
+          addVisioMessage('doctor', data.message, data.doctor);
+          speakText(data.message);
+          break;
+
+        case 'response':
+          addVisioMessage('doctor', data.message, data.doctor);
+          speakText(data.message);
+          break;
+
+        case 'videoAnalysis':
+          addVisioMessage('doctor', '👁️ ' + data.message, data.doctor);
+          speakText(data.message);
+          break;
+
+        case 'redirect':
+          addVisioMessage('system', `🔀 Redirection vers ${data.newDoctor.name} - ${data.newDoctor.specialty}`);
+
+          setTimeout(() => {
+            updateVisioDoctor(data.newDoctor);
+            addVisioMessage('system', `✅ ${data.newDoctor.name} prend le relais de votre consultation`);
+          }, 1000);
+          break;
+
+        case 'error':
+          addVisioMessage('system', '❌ Erreur : ' + data.message);
+          break;
+      }
+    }
+
+    function addVisioMessage(type, text, doctor = null) {
+      const conv = document.getElementById('visioConversation');
+      const msg = document.createElement('div');
+      msg.style.cssText = 'padding: 14px; border-radius: 10px; font-size: 14px; line-height: 1.6; animation: fadeIn 0.3s;';
+
+      if (type === 'doctor') {
+        msg.style.background = '#eff6ff';
+        msg.style.borderLeft = '4px solid #3b82f6';
+        msg.innerHTML = `<div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">${doctor.avatar} ${doctor.name}</div><div style="color: #4b5563;">${text}</div>`;
+      } else if (type === 'patient') {
+        msg.style.background = '#f0fdf4';
+        msg.style.borderLeft = '4px solid #10b981';
+        msg.innerHTML = `<div style="font-weight: 600; margin-bottom: 6px; color: #1f2937;">👤 Vous</div><div style="color: #4b5563;">${text}</div>`;
+      } else {
+        msg.style.background = '#fef3c7';
+        msg.style.textAlign = 'center';
+        msg.style.color = '#92400e';
+        msg.style.fontWeight = '500';
+        msg.textContent = text;
+      }
+
+      conv.appendChild(msg);
+      conv.parentElement.scrollTop = conv.parentElement.scrollHeight;
+    }
+
+    function speakText(text) {
+      speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'fr-FR';
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      setTimeout(() => {
+        speechSynthesis.speak(utterance);
+      }, 100);
+    }
+
+    function updateVisioDoctor(doctor) {
+      document.getElementById('visioDoctorAvatar').textContent = doctor.avatar;
+      document.getElementById('visioDoctorName').textContent = doctor.name;
+      document.getElementById('visioDoctorSpecialty').textContent = doctor.specialty;
+    }
+
+    function stopVisio() {
+      console.log('🛑 Arrêt de la visio');
+
+      isVisioActive = false;
+
+      if (videoAnalysisInterval) {
+        clearInterval(videoAnalysisInterval);
+        videoAnalysisInterval = null;
+      }
+
+      if (visioRecognition) {
+        visioRecognition.stop();
+        visioRecognition = null;
+      }
+
+      speechSynthesis.cancel();
+
+      if (visioStream) {
+        visioStream.getTracks().forEach(track => {
+          track.stop();
+          console.log('Track arrêté:', track.kind);
+        });
+        visioStream = null;
+      }
+
+      if (visioWs) {
+        if (visioWs.readyState === WebSocket.OPEN) {
+          visioWs.send(JSON.stringify({ type: 'stop' }));
+        }
+        visioWs.close();
+        visioWs = null;
+      }
+
+      document.getElementById('visioVideo').style.display = 'none';
+      document.getElementById('visioPlaceholder').style.display = 'flex';
+      document.getElementById('visioStatus').textContent = 'Terminé';
+      document.getElementById('visioStatus').style.background = '#6b7280';
+      document.getElementById('visioStartBtn').disabled = false;
+      document.getElementById('visioStopBtn').disabled = true;
+
+      document.getElementById('visioDoctorAvatar').textContent = '👨‍⚕️';
+      document.getElementById('visioDoctorName').textContent = 'Dr. Adam';
+      document.getElementById('visioDoctorSpecialty').textContent = 'Médecine Générale & Régulation';
+
+      document.getElementById('visioConversation').innerHTML = `
+        <div style="text-align: center; padding: 12px; background: #fff3cd; border-radius: 8px; font-size: 13px; color: #856404;">
+          💡 Parlez naturellement, le médecin vous écoute et vous voit
+        </div>
+      `;
+    }
+
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('messageInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    document.getElementById('messageInput').addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  </script>
+</body>
+
+</html>

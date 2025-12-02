@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "email": "altaycevik@gmail.com",
+      "displayName": "Altay",
+      "createdAt": "2025-12-01T13:14:25.388Z",
+      "profile": {
+        "age": 21,
+        "sex": "Homme",
+        "country": "France",
+        "language": "fr"
+      },
+      "subscription": "individual",
+      "referrals": 0,
+      "freeWeeks": 0,
+      "updatedAt": "2025-12-02T08:29:14.031Z"
+    }
+  ],
+  "history": [],
+  "dailyUsage": {},
+  "subscriptions": []
+}
