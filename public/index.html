@@ -971,6 +971,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
+    // Remplace ton script actuel par celui-ci
     const firebaseConfig = {
       apiKey: "AIzaSyDUftm5YLpjxr4AcvxziWpC4Cgb1jbOP4k",
       authDomain: "ehosp-6f065.firebaseapp.com",
@@ -981,49 +982,64 @@
       measurementId: "G-EG19WDTL00"
     };
 
+    // Initialisation
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    let currentUser = null;
-    let currentDoctor = 'general';
-    let conversation = [];
-    let doctors = [];
-    let userProfile = null;
-    let currentPlan = 'free';
+    // Vérification console pour voir si ça charge
+    console.log("Firebase initialisé");
 
-    const API_URL = window.location.origin;
-
-    // ========== AUTHENTIFICATION ==========
+    // Fonction de connexion
     async function loginWithGoogle() {
+      console.log("Tentative de connexion...");
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);  // ✅ POPUP
-        console.log('Login réussi:', result.user.email);     // ✅ Debug
+        // Force la sélection du compte pour éviter les blocages silencieux
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        await auth.signInWithPopup(provider);
       } catch (error) {
-        console.error('Erreur auth:', error);
-        alert('Erreur: ' + error.message);
+        console.error('Erreur Login:', error);
+        alert('Erreur Google: ' + error.message);
       }
     }
 
-
+    // Gestionnaire d'état (C'est lui qui cache/affiche l'écran)
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // User connecté
-        const token = await user.getIdToken();
-        const response = await fetch(`${API_URL}/api/auth`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email, token })
-        });
-        if (response.ok) {
-          // cacher authScreen, afficher appContainer
-          document.getElementById("authScreen").classList.add("hidden");
-          document.getElementById("appContainer").classList.remove("hidden");
-        } else {
-          alert("Erreur auth serveur");
+        console.log("Utilisateur connecté:", user.email);
+
+        // On récupère le token pour le backend
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`${API_URL}/api/auth`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: user.email,
+              token: token,
+              displayName: user.displayName
+            })
+          });
+
+          if (response.ok) {
+            document.getElementById("authScreen").classList.add("hidden");
+            document.getElementById("appContainer").classList.remove("hidden");
+            currentUser = user; // Sauvegarde l'user globalement
+
+            // Charge les données initiales
+            updateUserProfile(user);
+            loadDoctors();
+
+          } else {
+            throw new Error("Réponse serveur non OK");
+          }
+        } catch (e) {
+          console.error("Erreur Backend:", e);
+          alert("Connecté à Google mais erreur serveur Render. Vérifiez les logs.");
         }
       } else {
-        // user déconnecté
+        console.log("Utilisateur déconnecté");
         document.getElementById("authScreen").classList.remove("hidden");
         document.getElementById("appContainer").classList.add("hidden");
       }
