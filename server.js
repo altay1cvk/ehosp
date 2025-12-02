@@ -6,9 +6,11 @@ const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { WebSocketServer } = require('ws');
 const http = require('http');
+
+// --- MODIFICATION ICI : ON PASSE EN MÉMOIRE RAM ---
 const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
-const path = require('path');
+// On utilise Memory au lieu de FileSync. Plus aucun fichier n'est écrit sur le disque.
+const Memory = require('lowdb/adapters/Memory');
 
 const app = express();
 const server = http.createServer(app);
@@ -20,28 +22,26 @@ const ADMIN_EMAIL = 'altaycevik@gmail.com';
 
 if (!GEMINI_API_KEY) {
   console.error('❌ ERREUR : GEMINI_API_KEY manquante');
-  process.exit(1);
+  // On évite le crash brutal, on log juste l'erreur
 }
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "API_KEY_MANQUANTE");
 const PRIMARY_MODEL = 'gemini-2.0-flash-exp';
 
-// NOUVEAU CODE (Fonctionne sur Render) ✅
-// On utilise /tmp/ uniquement si on est en ligne
-const fs = require('fs');
-
-// Si le dossier /tmp existe (c'est le cas sur Render), on l'utilise. Sinon on reste en local.
-const dbPath = fs.existsSync('/tmp') ? '/tmp/db.json' : 'db.json';
-
-const adapter = new FileSync(dbPath);
+// Plus de calcul de chemin, plus de /tmp. Juste la mémoire.
+const adapter = new Memory();
 const db = low(adapter);
 
+// Le reste ne change pas...
 db.defaults({
   users: [],
   history: [],
   dailyUsage: {},
   subscriptions: []
 }).write();
+
+app.use(cors());
+// ... la suite de ton code reste pareil
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
