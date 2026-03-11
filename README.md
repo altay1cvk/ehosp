@@ -1,0 +1,1 @@
+# eHosp — AI Medical Platform
